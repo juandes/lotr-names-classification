@@ -38,7 +38,7 @@
 
 <p>As a huge fan of the Lord of the Rings and Tolkien's work, I was interested in finding a way of using data from the legendarium with machine learning. While searching and pondering about what problem could be interesting, I had the idea of playing around with the names of the characters and the relation to the race of said character.</p>
 
-<p>In this report, I will discuss and show an approach used to predict the races of the characters from Lord of the Rings using a naive Bayes classifier and various techniques for natural language processing. The dataset used consists of 827 observations (characters) and their respective race.</p>
+<p>In this report, I will discuss and show an approach used to predict the races of the characters from Lord of the Rings using a naive Bayes classifier and various techniques for natural language processing. How is that done? You might ask. The reasoning behind this, is that an algorithm will be trained using the names of the characters and their races. While it is being trained, it will learn about the similarities between the names and the races. For example, suppose that we tell to the algorithm that the name <code>Juan</code>, <code>Jose</code> and <code>Jony</code> are Spanish names, in other words we are teaching the model that a name that starts with <code>J</code>, and has four characters is indeed a Spanish name. After the model is train, we feed it with the name <code>Javi</code> and if the training was successful, the algorithm will output that the name is a Spanish one. The dataset used consists of 827 observations (characters) and their respective race.</p>
 
 <h3>
 <a id="data-fields" class="anchor" href="#data-fields" aria-hidden="true"><span class="octicon octicon-link"></span></a>Data fields</h3>
@@ -188,14 +188,33 @@ df <span class="pl-k">=</span> sqlContext.createDataFrame(data_rdd)</pre></div>
 <em>IDF</em>: Inverse document frequency (IDF) is a technique used to deduct how important a bigram (in this case, typically it is a word) is to a document. This IDF number increased proportionally to the number of times a bigram appears in the document, or corpus. This transforming along with HashingTF are known as TF-IDF.</li>
 </ul>
 
-<p>To explain the pipeline, let's use the name 'aragorn' as an example. Don't worry about the meaning of the numbers, the purpose of this example is to illustrate the process.
-'aragorn' -&gt; apply n-gram -&gt; '['a r', 'r a', 'a g', 'g o', 'o r', 'r n']' -&gt; apply HashingTF -&gt; '[86, 143, 156, 277, 312, 323]' -&gt; apply IDF -&gt; '[2.6586, 2.3246, 2.8272, 1.8987, 3.5835, 1.5832]'</p>
+<p>To explain the pipeline, let's use the name 'aragorn' as an example. Don't worry about the meaning of the numbers, the purpose of this example is to illustrate the process.</p>
+
+<p><code>aragorn</code> -&gt; apply n-gram -&gt; <code>['a r', 'r a', 'a g', 'g o', 'o r', 'r n']</code> -&gt; apply HashingTF -&gt; <code>[86, 143, 156, 277, 312, 323]</code> -&gt; apply IDF -&gt; <code>[2.6586, 2.3246, 2.8272, 1.8987, 3.5835, 1.5832]</code></p>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-c"># Pipeline consisting of three stages: NGrams, HashingTF and IDF</span>
+<span class="pl-v">ngram</span> <span class="pl-k">=</span> NGram(<span class="pl-v">n</span><span class="pl-k">=</span><span class="pl-c1">2</span>, <span class="pl-v">inputCol</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>name<span class="pl-pds">"</span></span>, <span class="pl-v">outputCol</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>nGrams<span class="pl-pds">"</span></span>)
+<span class="pl-v">hashingTF</span> <span class="pl-k">=</span> HashingTF(<span class="pl-v">numFeatures</span><span class="pl-k">=</span><span class="pl-c1">500</span>, <span class="pl-v">inputCol</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>nGrams<span class="pl-pds">"</span></span>, <span class="pl-v">outputCol</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>TF<span class="pl-pds">"</span></span>)
+<span class="pl-v">idf</span> <span class="pl-k">=</span> IDF(<span class="pl-v">inputCol</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>TF<span class="pl-pds">"</span></span>, <span class="pl-v">outputCol</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>idf<span class="pl-pds">"</span></span>)
+<span class="pl-v">pipeline</span> <span class="pl-k">=</span> Pipeline(<span class="pl-v">stages</span> <span class="pl-k">=</span> [<span class="pl-smi">ngram</span>, <span class="pl-smi">hashingTF</span>, <span class="pl-smi">idf</span>])
+
+<span class="pl-c"># Fit the pipeline </span>
+<span class="pl-v">pipelined_data</span> <span class="pl-k">=</span> pipeline.fit(<span class="pl-smi">df</span>)
+<span class="pl-v">transformed_data</span> <span class="pl-k">=</span> pipelined_data.transform(<span class="pl-smi">df</span>)
+<span class="pl-smi">training_set</span>, <span class="pl-v">test_set</span> <span class="pl-k">=</span> transformed_data.randomSplit([<span class="pl-c1">0.8</span>, <span class="pl-c1">0.2</span>], <span class="pl-v">seed</span> <span class="pl-k">=</span> <span class="pl-c1">10</span>)</pre></div>
+
+<p>Once the data is transformed, the dataset is split into a training set made of 80% of the original dataset, and a test set made of the remaining 20%.</p>
+
+<h3>
+<a id="prediction-and-results" class="anchor" href="#prediction-and-results" aria-hidden="true"><span class="octicon octicon-link"></span></a>Prediction and results</h3>
+
+<p>Before going into the actual prediction section, I would like to show some of the data so you can see it for yourself and reach your own conclusions about the similarities between the names (if there is one). When looking at it, think of the example of the Spanish names explained at the start.</p>
 
 <table>
 <thead>
 <tr>
-<th>Tables</th>
-<th align="center">Are</th>
+<th>Man</th>
+<th align="center">Ainur</th>
 <th align="right">Cool</th>
 <th>Another</th>
 <th>Hobbit</th>
@@ -203,21 +222,35 @@ df <span class="pl-k">=</span> sqlContext.createDataFrame(data_rdd)</pre></div>
 </thead>
 <tbody>
 <tr>
-<td>col 3 is</td>
+<td>Aragorn</td>
 <td align="center">right-aligned</td>
 <td align="right">$1600</td>
 <td>w</td>
 <td>Hi</td>
 </tr>
 <tr>
-<td>col 2 is</td>
+<td>Aulendil</td>
 <td align="center">centered</td>
 <td align="right">$12</td>
 <td>s</td>
 <td>Hola</td>
 </tr>
 <tr>
-<td>zebra stripes</td>
+<td>Atanalcar</td>
+<td align="center">are neat</td>
+<td align="right">$1</td>
+<td>s</td>
+<td>wdwdw</td>
+</tr>
+<tr>
+<td>Vardamir</td>
+<td align="center">are neat</td>
+<td align="right">$1</td>
+<td>s</td>
+<td>wdwdw</td>
+</tr>
+<tr>
+<td>Axantur</td>
 <td align="center">are neat</td>
 <td align="right">$1</td>
 <td>s</td>
