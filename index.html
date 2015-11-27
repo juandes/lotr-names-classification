@@ -175,7 +175,21 @@ df <span class="pl-k">=</span> sqlContext.createDataFrame(data_rdd)</pre></div>
 <h3>
 <a id="transformation-pipeline" class="anchor" href="#transformation-pipeline" aria-hidden="true"><span class="octicon octicon-link"></span></a>Transformation pipeline</h3>
 
-<p>One of the reason why I did this work, was to test Spark's ML pipeline. Normally, I used the MLLIB library for performing machine learning, but for this work I wanted to try ML and its pipeline for the first time. A pipeline is a sequence of stages where the data is transformed at each step. For more details of this, check the official documentation at <a href="http://spark.apache.org/docs/latest/ml-guide.html#pipeline">Spark's pipeline</a>.</p>
+<p>One of the reason why I did this work, was to test Spark's ML pipeline. Normally, I used the MLLIB library for performing machine learning, but for this work I wanted to try ML and its pipeline for the first time. A pipeline is a sequence of stages where the data is transformed at each step. For more details of this, check the official documentation at <a href="http://spark.apache.org/docs/latest/ml-guide.html#pipeline">Spark's pipeline</a>. You might be asking why we need to transform the names, and the reason is that with this kind of problems (natural language processing), is not always optimal to use the text as it is. Normally, you have to transform it in such as way that it is better for the algorithms to process it.</p>
+
+<p>The pipeline used for transforming the data consists of 3 steps:</p>
+
+<ul>
+<li>
+<em>n-gram</em>: <em>n-gram is a contiguous sequence of n items from a given sequence of text or speech.</em> (<a href="https://en.wikipedia.org/wiki/N-gram">NGram</a>). In this case, the items are the characters of the name. For this problem, I used an ngran with <em>n=2</em>, also known as a bigram.</li>
+<li>
+<em>HashingTF</em>: Hashing trick or HashingTF (as it is called in Spark) is a technique used for turning features into indices of a vector. In other words, what we are doing with this transformation, is turning each item of the bigram into a number.</li>
+<li>
+<em>IDF</em>: Inverse document frequency (IDF) is a technique used to deduct how important a bigram (in this case, typically it is a word) is to a document. This IDF number increased proportionally to the number of times a bigram appears in the document, or corpus. This transforming along with HashingTF are known as TF-IDF.</li>
+</ul>
+
+<p>To explain the pipeline, let's use the name 'aragorn' as an example. Don't worry about the meaning of the numbers, the purpose of this example is to illustrate the process.
+'aragorn' -&gt; apply n-gram -&gt; '['a r', 'r a', 'a g', 'g o', 'o r', 'r n']' -&gt; apply HashingTF -&gt; '[86, 143, 156, 277, 312, 323]' -&gt; apply IDF -&gt; '[2.6586, 2.3246, 2.8272, 1.8987, 3.5835, 1.5832]'</p>
 
 <table>
 <thead>
