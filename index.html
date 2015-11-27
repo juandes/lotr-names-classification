@@ -211,13 +211,54 @@ df <span class="pl-k">=</span> sqlContext.createDataFrame(data_rdd)</pre></div>
 
 <p>Before going into the actual prediction section, I would like to show some of the data so you can see it for yourself and reach your own conclusions about the similarities between the names (if there is one). When looking at it, think of the example of the Spanish names explained at the start.</p>
 
-<p>| Man           | Ainur         | Elf      | Hobbit      |   Dwarf  |
-| ------------- |:-------------:| ------- :| ----------- | -------- |
-| Aragorn       | Manwë         | Arwen    |  Frodo      | Durin    |
-| Aulendil      | Aulë          | Ingwë    |  Ferumbras  | Óin      |
-| Atanalcar     | Oromë         | Ingil    |  Fortinbras | Thráin   |
-| Vardamir      | Irmo          | Galadriel|  Isembard   | Thorin   |
-| Axantur       | Morgorh       | Celeborn |  Flambard   | Glóin    |</p>
+<table>
+<thead>
+<tr>
+<th>Man</th>
+<th align="center">Ainur</th>
+<th align="right">Elf</th>
+<th>Hobbit</th>
+<th>Dwarf</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Aragorn</td>
+<td align="center">Manwë</td>
+<td align="right">Arwen</td>
+<td>Frodo</td>
+<td>Durin</td>
+</tr>
+<tr>
+<td>Aulendil</td>
+<td align="center">Aulë</td>
+<td align="right">Ingwë</td>
+<td>Ferumbras</td>
+<td>Óin</td>
+</tr>
+<tr>
+<td>Atanalcar</td>
+<td align="center">Oromë</td>
+<td align="right">Ingil</td>
+<td>Fortinbras</td>
+<td>Thráin</td>
+</tr>
+<tr>
+<td>Vardamir</td>
+<td align="center">Irmo</td>
+<td align="right">Galadriel</td>
+<td>Isembard</td>
+<td>Thorin</td>
+</tr>
+<tr>
+<td>Axantur</td>
+<td align="center">Morgorh</td>
+<td align="right">Celeborn</td>
+<td>Flambard</td>
+<td>Glóin</td>
+</tr>
+</tbody>
+</table>
 
 <p>Notice any similarities between the races? What do you think? Remember the length feature I defined earlier? Let's see the average
 length of names per race.</p>
