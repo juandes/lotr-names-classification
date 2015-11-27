@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>Lotr-names-classification by juandes</title>
+    <title>An approach to classify the races of characters from Lord of the Rings using their names as feature and naive Bayes by juandes</title>
 
     <link rel="stylesheet" href="stylesheets/styles.css">
     <link rel="stylesheet" href="stylesheets/github-light.css">
@@ -15,7 +15,7 @@
   <body>
     <div class="wrapper">
       <header>
-        <h1>Lotr-names-classification</h1>
+        <h1>An approach to classify the races of characters from Lord of the Rings using their names as feature and naive Bayes</h1>
         <p>Machine learning used to classify the race of characters from Lord of the Rings</p>
 
         <p class="view"><a href="https://github.com/juandes/lotr-names-classification">View the Project on GitHub <small>juandes/lotr-names-classification</small></a></p>
@@ -206,58 +206,84 @@ df <span class="pl-k">=</span> sqlContext.createDataFrame(data_rdd)</pre></div>
 <p>Once the data is transformed, the dataset is split into a training set made of 80% of the original dataset, and a test set made of the remaining 20%.</p>
 
 <h3>
-<a id="prediction-and-results" class="anchor" href="#prediction-and-results" aria-hidden="true"><span class="octicon octicon-link"></span></a>Prediction and results</h3>
+<a id="overview-of-the-data" class="anchor" href="#overview-of-the-data" aria-hidden="true"><span class="octicon octicon-link"></span></a>Overview of the data</h3>
 
 <p>Before going into the actual prediction section, I would like to show some of the data so you can see it for yourself and reach your own conclusions about the similarities between the names (if there is one). When looking at it, think of the example of the Spanish names explained at the start.</p>
+
+<p>| Man           | Ainur         | Elf      | Hobbit      |   Dwarf  |
+| ------------- |:-------------:| ------- :| ----------  | -------- |
+| Aragorn       | Manwë         | Arwen    |  Frodo      | Durin    |
+| Aulendil      | Aulë          | Ingwë    |  Ferumbras  | Óin    |
+| Atanalcar     | Oromë         | Ingil    |  Fortinbras | Thráin   |
+| Vardamir      | Irmo          | Galadriel|  Isembard   | Thorin   |
+| Axantur       | Morgorh       | Celeborn |  Flambard   | Glóin    |</p>
+
+<p>Notice any similarities between the races? What do you think? Remember the length feature I defined earlier? Let's see the average
+length of names per race.</p>
+
+<div class="highlight highlight-source-python"><pre>df.groupBy(<span class="pl-s"><span class="pl-pds">'</span>race<span class="pl-pds">'</span></span>).agg({<span class="pl-s"><span class="pl-pds">'</span>length<span class="pl-pds">'</span></span>: <span class="pl-s"><span class="pl-pds">'</span>avg<span class="pl-pds">'</span></span>}).show()</pre></div>
 
 <table>
 <thead>
 <tr>
-<th>Man</th>
-<th align="center">Ainur</th>
-<th align="right">Cool</th>
-<th>Another</th>
-<th>Hobbit</th>
+<th>Race</th>
+<th align="center">Length</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Aragorn</td>
-<td align="center">right-aligned</td>
-<td align="right">$1600</td>
-<td>w</td>
-<td>Hi</td>
+<td>Man</td>
+<td align="center">7.13842482</td>
 </tr>
 <tr>
-<td>Aulendil</td>
-<td align="center">centered</td>
-<td align="right">$12</td>
-<td>s</td>
-<td>Hola</td>
+<td>Ainur</td>
+<td align="center">5.97368421</td>
 </tr>
 <tr>
-<td>Atanalcar</td>
-<td align="center">are neat</td>
-<td align="right">$1</td>
-<td>s</td>
-<td>wdwdw</td>
+<td>Elf</td>
+<td align="center">6.55855855</td>
 </tr>
 <tr>
-<td>Vardamir</td>
-<td align="center">are neat</td>
-<td align="right">$1</td>
-<td>s</td>
-<td>wdwdw</td>
+<td>Hobbit</td>
+<td align="center">6.37142857</td>
 </tr>
 <tr>
-<td>Axantur</td>
-<td align="center">are neat</td>
-<td align="right">$1</td>
-<td>s</td>
-<td>wdwdw</td>
+<td>Dwarf</td>
+<td align="center">4.75510204</td>
 </tr>
 </tbody>
 </table>
+
+<p>The table shows that on average, men has the longest names, e.g. Atanalcar, while dwarves have the shortest ones (heh!), e.g. Óin.</p>
+
+<p>Now, to the prediction model.</p>
+
+<h2>
+<a id="prediction-and-results" class="anchor" href="#prediction-and-results" aria-hidden="true"><span class="octicon octicon-link"></span></a>Prediction and results</h2>
+
+<p>The prediction model used in this report is a naive Bayes classifier. In most cases, this classifier performs well while working with text data because of it assumes that attributes values are independent of each other. But wait? If we are trying to predict the races based on the format of the name, why this? Good question. For these kind of problems the terms are conditionally dependent on each other, but let's not think about that for now.</p>
+
+<p>In the next piece of code, the model is created, trained and tested using the test dataset. After that, we calculate the accuracy which is 0.801282051282 or roughly 80%.</p>
+
+<div class="highlight highlight-source-python"><pre><span class="pl-c"># Create the model, train and predict</span>
+nb <span class="pl-k">=</span> NaiveBayes(<span class="pl-smi">smoothing</span><span class="pl-k">=</span><span class="pl-c1">1.0</span>, <span class="pl-smi">modelType</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>multinomial<span class="pl-pds">"</span></span>, <span class="pl-smi">featuresCol</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>idf<span class="pl-pds">'</span></span>, <span class="pl-smi">labelCol</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>race<span class="pl-pds">'</span></span>)
+model <span class="pl-k">=</span> nb.fit(training_set)
+predictions <span class="pl-k">=</span> model.transform(test_set)
+accuracy <span class="pl-k">=</span> <span class="pl-c1">1.0</span> <span class="pl-k">*</span> predictions.filter(predictions.race <span class="pl-k">==</span> predictions.prediction).count() <span class="pl-k">/</span> predictions.count()
+<span class="pl-k">print</span> (accuracy)</pre></div>
+
+<p>80% is a good number! It means that in 8 out of 10 cases the model was able to guess correctly the race of the character. Better than random guessing, eh?</p>
+
+<h2>
+<a id="conclusion" class="anchor" href="#conclusion" aria-hidden="true"><span class="octicon octicon-link"></span></a>Conclusion</h2>
+
+<hr>
+
+<p>In this report we built a naive Bayes classifier model for classifying the races of characters of Lord of the Rings based on their name. While doing it, topics such as classification, pipeline, and data pre-processing were discussed.</p>
+
+<p>What now? While the result of the algorithm was a good one, I am sure that the accuracy percentage can be improved at least by a few percentages. Our model was based on the bigram of the name, however certain features such as the length of the name, the ratio between vowels/consonants, and the number of foreign letters should be analyzed.</p>
+
+<p>Tolkien was a genius.</p>
       </section>
       <footer>
         <p>This project is maintained by <a href="https://github.com/juandes">juandes</a></p>
