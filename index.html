@@ -1,0 +1,149 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Lotr-names-classification by juandes</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-light.css">
+    <meta name="viewport" content="width=device-width">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Lotr-names-classification</h1>
+        <p>Machine learning used to classify the race of characters from Lord of the Rings</p>
+
+        <p class="view"><a href="https://github.com/juandes/lotr-names-classification">View the Project on GitHub <small>juandes/lotr-names-classification</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/juandes/lotr-names-classification/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/juandes/lotr-names-classification/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/juandes/lotr-names-classification">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>
+<a id="an-approach-to-classify-the-races-of-characters-from-lord-of-the-rings-using-their-names-as-feature-and-naive-bayes" class="anchor" href="#an-approach-to-classify-the-races-of-characters-from-lord-of-the-rings-using-their-names-as-feature-and-naive-bayes" aria-hidden="true"><span class="octicon octicon-link"></span></a>An approach to classify the races of characters from Lord of the Rings using their names as feature and naive Bayes</h1>
+
+<h2>
+<a id="overview" class="anchor" href="#overview" aria-hidden="true"><span class="octicon octicon-link"></span></a>Overview</h2>
+
+<hr>
+
+<p>As a huge fan of the Lord of the Rings and Tolkien's work, I was interested in finding a way of using data from the legendarium with machine learning. While searching and pondering about what problem could be interesting, I had the idea of playing around with the names of the characters and the relation to the race of said character.</p>
+
+<p>In this report, I will discuss and show an approach used to predict the races of the characters from Lord of the Rings using a naive Bayes classifier and various techniques for natural language processing. The dataset used consists of 827 observations (characters) and their respective race.</p>
+
+<h3>
+<a id="data-fields" class="anchor" href="#data-fields" aria-hidden="true"><span class="octicon octicon-link"></span></a>Data fields</h3>
+
+<ul>
+<li>name: the name of the character</li>
+<li>race: the race of the character. There are five possible races: Man, Ainur, Elf, Dwarf and Hobbit.</li>
+</ul>
+
+<h3>
+<a id="tools-used" class="anchor" href="#tools-used" aria-hidden="true"><span class="octicon octicon-link"></span></a>Tools used</h3>
+
+<ul>
+<li>Spark (Pyspark)</li>
+<li>R: for scraping, transforming and preparing the data.</li>
+</ul>
+
+<h2>
+<a id="scraping-the-data" class="anchor" href="#scraping-the-data" aria-hidden="true"><span class="octicon octicon-link"></span></a>Scraping the data</h2>
+
+<p>The data used for the study was scraped from the website <a href="http://lotrproject.com/">http://lotrproject.com/</a> (which is awesome). At the moment of writing, the homepage of the site features a family tree of all the characters from Tolkien's universe. Using Chrome's <em>View Page Source</em>, I copied the HTML code that is related to the characters to a new file.</p>
+
+<p>Then using R and the <a href="https://cran.r-project.org/web/packages/rvest/rvest.pdf">rvest</a> web scraping library, I was able to scrap the wanted data. The next piece of show shows this.</p>
+
+<div class="highlight highlight-source-r"><pre>library(<span class="pl-smi">rvest</span>)
+<span class="pl-smi">html_data</span> <span class="pl-k">&lt;-</span> read_html(<span class="pl-s"><span class="pl-pds">"</span>~/Development/lotr-names-classification/lotr-names-html.html<span class="pl-pds">"</span></span>)
+<span class="pl-smi">characters_data</span> <span class="pl-k">&lt;-</span> <span class="pl-k">data.frame</span>(<span class="pl-v">name</span> <span class="pl-k">=</span> <span class="pl-k">character</span>(<span class="pl-c1">0</span>), <span class="pl-v">race</span> <span class="pl-k">=</span> <span class="pl-k">character</span>(<span class="pl-c1">0</span>),
+                              <span class="pl-v">stringsAsFactors</span> <span class="pl-k">=</span> <span class="pl-c1">FALSE</span>)
+
+<span class="pl-k">for</span> (<span class="pl-smi">i</span> <span class="pl-k">in</span> <span class="pl-c1">1</span><span class="pl-k">:</span><span class="pl-c1">952</span>){
+
+  <span class="pl-c"># Get the name</span>
+  <span class="pl-smi">name</span> <span class="pl-k">&lt;-</span> <span class="pl-smi">html_data</span> %<span class="pl-k">&gt;</span>%
+    html_nodes(paste0(<span class="pl-s"><span class="pl-pds">'</span>#<span class="pl-pds">'</span></span>, <span class="pl-smi">i</span>)) %<span class="pl-k">&gt;</span>%
+    html_text()
+
+  <span class="pl-smi">race_and_class</span> <span class="pl-k">&lt;-</span> strsplit(<span class="pl-smi">html_data</span> %<span class="pl-k">&gt;</span>%
+    html_nodes(paste0(<span class="pl-s"><span class="pl-pds">'</span>#<span class="pl-pds">'</span></span>, <span class="pl-smi">i</span>)) %<span class="pl-k">&gt;</span>%
+    html_attr(<span class="pl-s"><span class="pl-pds">'</span>class<span class="pl-pds">'</span></span>), <span class="pl-v">split</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span> <span class="pl-pds">'</span></span>)
+
+  <span class="pl-k">if</span> (length(<span class="pl-smi">name</span>) <span class="pl-k">&gt;</span> <span class="pl-c1">0</span>) {
+    <span class="pl-smi">characters_data</span>[<span class="pl-smi">i</span>,] <span class="pl-k">&lt;-</span> <span class="pl-k">list</span>(<span class="pl-smi">name</span>, <span class="pl-smi">race_and_class</span>[[<span class="pl-c1">1</span>]][length(<span class="pl-smi">race_and_class</span>[[<span class="pl-c1">1</span>]]) <span class="pl-k">-</span> <span class="pl-c1">1</span>])
+  }
+}</pre></div>
+
+<p>Now, we have the data in a dataframe. However, we are not done yet! As usual, the data is not in the right shape. Some of the observations has '?' as the character name, NA entries and trailing spaces. So, let's clean.</p>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-c"># Remove rows with NA</span>
+<span class="pl-smi">characters_data</span> <span class="pl-k">&lt;-</span> na.omit(<span class="pl-smi">characters_data</span>)
+<span class="pl-c"># Remove rows where name is '?'</span>
+<span class="pl-smi">characters_data</span> <span class="pl-k">&lt;-</span> <span class="pl-smi">characters_data</span>[grep(<span class="pl-s"><span class="pl-pds">'</span><span class="pl-cce">\\</span>?<span class="pl-pds">'</span></span>, <span class="pl-smi">characters_data</span><span class="pl-k">$</span><span class="pl-smi">name</span>, <span class="pl-v">invert</span> <span class="pl-k">=</span> <span class="pl-c1">TRUE</span>), ]
+<span class="pl-c"># Remove \n from the names</span>
+<span class="pl-smi">characters_data</span><span class="pl-k">$</span><span class="pl-smi">name</span> <span class="pl-k">&lt;-</span> sub(<span class="pl-s"><span class="pl-pds">'</span><span class="pl-cce">\n</span><span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span><span class="pl-pds">'</span></span>, <span class="pl-smi">characters_data</span><span class="pl-k">$</span><span class="pl-smi">name</span>)
+<span class="pl-c"># Remove the prefix '1st', '2nd', etc.</span>
+<span class="pl-smi">characters_data</span><span class="pl-k">$</span><span class="pl-smi">name</span> <span class="pl-k">&lt;-</span> sub(<span class="pl-s"><span class="pl-pds">'</span>[0-9]?[0-9][a-z]{2}<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span><span class="pl-pds">'</span></span>, <span class="pl-smi">characters_data</span><span class="pl-k">$</span><span class="pl-smi">name</span>)</pre></div>
+
+<p>In the previous piece of code, we removed rows that contains NA, character names '?', and the prefix '1st', '2nd', etc that was present on some of the names. If you take a look at the linked website, you will see why the data has this.</p>
+
+<p>While cleaning the data, I removed those characters whose respective races does not appear often in the dataset because they would probably do more harm than good at the time of predicting since we do not have a large number of characters from that race.</p>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-c"># Subset the races that have a significant number of entries</span>
+<span class="pl-smi">characters_data</span> <span class="pl-k">&lt;-</span> <span class="pl-smi">characters_data</span>[<span class="pl-smi">characters_data</span><span class="pl-k">$</span><span class="pl-smi">race</span> <span class="pl-k">==</span> <span class="pl-s"><span class="pl-pds">'</span>Ainur<span class="pl-pds">'</span></span> <span class="pl-k">|</span> 
+                        <span class="pl-smi">characters_data</span><span class="pl-k">$</span><span class="pl-smi">race</span> <span class="pl-k">==</span> <span class="pl-s"><span class="pl-pds">'</span>Dwarf<span class="pl-pds">'</span></span> <span class="pl-k">|</span>
+                        <span class="pl-smi">characters_data</span><span class="pl-k">$</span><span class="pl-smi">race</span> <span class="pl-k">==</span> <span class="pl-s"><span class="pl-pds">'</span>Elf<span class="pl-pds">'</span></span> <span class="pl-k">|</span>
+                        <span class="pl-smi">characters_data</span><span class="pl-k">$</span><span class="pl-smi">race</span> <span class="pl-k">==</span> <span class="pl-s"><span class="pl-pds">'</span>Half-elf<span class="pl-pds">'</span></span> <span class="pl-k">|</span>
+                        <span class="pl-smi">characters_data</span><span class="pl-k">$</span><span class="pl-smi">race</span> <span class="pl-k">==</span> <span class="pl-s"><span class="pl-pds">'</span>Hobbit<span class="pl-pds">'</span></span> <span class="pl-k">|</span>
+                        <span class="pl-smi">characters_data</span><span class="pl-k">$</span><span class="pl-smi">race</span> <span class="pl-k">==</span> <span class="pl-s"><span class="pl-pds">'</span>Man<span class="pl-pds">'</span></span>, ]
+<span class="pl-c"># Change the half-elves for elves (sorry Elrond)</span>
+<span class="pl-smi">characters_data</span><span class="pl-k">$</span><span class="pl-smi">race</span>[<span class="pl-smi">characters_data</span><span class="pl-k">$</span><span class="pl-smi">race</span> <span class="pl-k">==</span> <span class="pl-s"><span class="pl-pds">'</span>Half-elf<span class="pl-pds">'</span></span>] <span class="pl-k">&lt;-</span> <span class="pl-s"><span class="pl-pds">'</span>Elf<span class="pl-pds">'</span></span></pre></div>
+
+<p>IMAGE</p>
+
+<p>So we kept, the ainur, dwarves, men, hobbits, elves and half-elves. These last two groups were marge into one, called elf. The race with the weird characters is 'Dunedain'</p>
+
+<p>Lastly, the trailing spaces were removed, as well to some characters who do not have an actual name, but a title, e.g. Master of Lake-town, and the surnames, e.g. Frodo Baggins -&gt; Frodo and Thorin III -&gt; Thorin.</p>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-c"># Remove trailing spaces</span>
+<span class="pl-smi">characters_data</span><span class="pl-k">$</span><span class="pl-smi">name</span> <span class="pl-k">&lt;-</span> sub(<span class="pl-s"><span class="pl-pds">'</span>[ <span class="pl-cce">\t</span>]+$<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span><span class="pl-pds">'</span></span>, <span class="pl-smi">characters_data</span><span class="pl-k">$</span><span class="pl-smi">name</span>)
+<span class="pl-c"># Remove an entry where the name is 'Others'</span>
+<span class="pl-smi">characters_data</span> <span class="pl-k">&lt;-</span> <span class="pl-smi">characters_data</span>[<span class="pl-smi">characters_data</span><span class="pl-k">$</span><span class="pl-smi">name</span> <span class="pl-k">!=</span> <span class="pl-s"><span class="pl-pds">'</span>Others<span class="pl-pds">'</span></span> <span class="pl-k">&amp;</span> 
+                                     <span class="pl-smi">characters_data</span><span class="pl-k">$</span><span class="pl-smi">name</span> <span class="pl-k">!=</span> <span class="pl-s"><span class="pl-pds">'</span>Master of La...<span class="pl-pds">'</span></span>, ]
+
+<span class="pl-c"># The names of the characters on this dataframe won't have any surnames or</span>
+<span class="pl-c"># numbers on their name; we'll keep just the first name.</span>
+<span class="pl-smi">characters_no_surnames</span> <span class="pl-k">&lt;-</span> <span class="pl-smi">characters_data</span>
+
+<span class="pl-c"># Regex to remove everything after the first whitespace</span>
+<span class="pl-smi">characters_no_surnames</span><span class="pl-k">$</span><span class="pl-smi">name</span> <span class="pl-k">&lt;-</span> sub(<span class="pl-s"><span class="pl-pds">'</span> .*<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span><span class="pl-pds">'</span></span>, <span class="pl-smi">characters_no_surnames</span><span class="pl-k">$</span><span class="pl-smi">name</span>)</pre></div>
+
+<p>Then the data was exported to a text file. In addition to the dataset without surnames, I also included a second dataset with the full name of the character.</p>
+
+<div class="highlight highlight-source-r"><pre>write.csv(<span class="pl-smi">characters_no_surnames</span>, <span class="pl-v">file</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>characters_no_surnames.csv<span class="pl-pds">'</span></span>, <span class="pl-v">row.names</span> <span class="pl-k">=</span> <span class="pl-c1">FALSE</span>)
+write.csv(<span class="pl-smi">characters_data</span>, <span class="pl-v">file</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>characters_data.csv<span class="pl-pds">'</span></span>, <span class="pl-v">row.names</span> <span class="pl-k">=</span> <span class="pl-c1">FALSE</span>)</pre></div>
+
+<h2>
+<a id="model-development-and-prediction" class="anchor" href="#model-development-and-prediction" aria-hidden="true"><span class="octicon octicon-link"></span></a>Model development and prediction</h2>
+
+<hr>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/juandes">juandes</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
