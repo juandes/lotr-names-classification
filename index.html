@@ -84,7 +84,7 @@
   }
 }</pre></div>
 
-<p>Now, we have the data in a dataframe. However, we are not done yet! As usual, the data is not in the right shape. Some of the observations has '?' as the character name, NA entries and trailing spaces. So, let's clean.</p>
+<p>Now, we have the data in a dataframe. However, we are not done yet! As usual, the data is not in the right shape. Some of the observations has <code>?</code> as the character name, NA entries and trailing spaces. So, let's clean.</p>
 
 <div class="highlight highlight-source-r"><pre><span class="pl-c"># Remove rows with NA</span>
 <span class="pl-smi">characters_data</span> <span class="pl-k">&lt;-</span> na.omit(<span class="pl-smi">characters_data</span>)
@@ -95,7 +95,7 @@
 <span class="pl-c"># Remove the prefix '1st', '2nd', etc.</span>
 <span class="pl-smi">characters_data</span><span class="pl-k">$</span><span class="pl-smi">name</span> <span class="pl-k">&lt;-</span> sub(<span class="pl-s"><span class="pl-pds">'</span>[0-9]?[0-9][a-z]{2}<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span><span class="pl-pds">'</span></span>, <span class="pl-smi">characters_data</span><span class="pl-k">$</span><span class="pl-smi">name</span>)</pre></div>
 
-<p>In the previous piece of code, we removed rows that contains NA, character names '?', and the prefix '1st', '2nd', etc that was present on some of the names. If you take a look at the linked website, you will see why the data has this.</p>
+<p>In the previous piece of code, we removed rows that contains NA, character names <code>?</code>, and the prefix <code>1st</code>, <code>2nd</code>, etc that was present on some of the names. If you take a look at the linked website, you will see why the data has this.</p>
 
 <p>While cleaning the data, I removed those characters whose respective races does not appear often in the dataset because they would probably do more harm than good at the time of predicting since we do not have a large number of characters from that race.</p>
 
@@ -109,7 +109,8 @@
 <span class="pl-c"># Change the half-elves for elves (sorry Elrond)</span>
 <span class="pl-smi">characters_data</span><span class="pl-k">$</span><span class="pl-smi">race</span>[<span class="pl-smi">characters_data</span><span class="pl-k">$</span><span class="pl-smi">race</span> <span class="pl-k">==</span> <span class="pl-s"><span class="pl-pds">'</span>Half-elf<span class="pl-pds">'</span></span>] <span class="pl-k">&lt;-</span> <span class="pl-s"><span class="pl-pds">'</span>Elf<span class="pl-pds">'</span></span></pre></div>
 
-<p><img src="http://juandes.github.io/lotr-names-classification/images/races_table.png" alt="Table"></p>
+<p><img src="http://juandes.github.io/lotr-names-classification/images/races_table.png" alt="Table">
+<em>the name with the strange characters should say *Dunedain</em></p>
 
 <p>So we kept, the ainur, dwarves, men, hobbits, elves and half-elves. These last two groups were marge into one, called elf. The race with the weird characters is 'Dunedain'</p>
 
@@ -211,9 +212,9 @@ df <span class="pl-k">=</span> sqlContext.createDataFrame(data_rdd)</pre></div>
 <p>Before going into the actual prediction section, I would like to show some of the data so you can see it for yourself and reach your own conclusions about the similarities between the names (if there is one). When looking at it, think of the example of the Spanish names explained at the start.</p>
 
 <p>| Man           | Ainur         | Elf      | Hobbit      |   Dwarf  |
-| ------------- |:-------------:| ------- :| ----------  | -------- |
+| ------------- |:-------------:| ------- :| ----------- | -------- |
 | Aragorn       | Manwë         | Arwen    |  Frodo      | Durin    |
-| Aulendil      | Aulë          | Ingwë    |  Ferumbras  | Óin    |
+| Aulendil      | Aulë          | Ingwë    |  Ferumbras  | Óin      |
 | Atanalcar     | Oromë         | Ingil    |  Fortinbras | Thráin   |
 | Vardamir      | Irmo          | Galadriel|  Isembard   | Thorin   |
 | Axantur       | Morgorh       | Celeborn |  Flambard   | Glóin    |</p>
