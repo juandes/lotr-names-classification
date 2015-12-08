@@ -195,16 +195,16 @@ df <span class="pl-k">=</span> sqlContext.createDataFrame(data_rdd)</pre></div>
 
 <p><code>aragorn</code> -&gt; apply n-gram -&gt; <code>['a r', 'r a', 'a g', 'g o', 'o r', 'r n']</code> -&gt; apply HashingTF -&gt; <code>[86, 143, 156, 277, 312, 323]</code> -&gt; apply IDF -&gt; <code>[2.6586, 2.3246, 2.8272, 1.8987, 3.5835, 1.5832]</code></p>
 
-<div class="highlight highlight-source-r"><pre><span class="pl-c"># Pipeline consisting of three stages: NGrams, HashingTF and IDF</span>
-<span class="pl-v">ngram</span> <span class="pl-k">=</span> NGram(<span class="pl-v">n</span><span class="pl-k">=</span><span class="pl-c1">2</span>, <span class="pl-v">inputCol</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>name<span class="pl-pds">"</span></span>, <span class="pl-v">outputCol</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>nGrams<span class="pl-pds">"</span></span>)
-<span class="pl-v">hashingTF</span> <span class="pl-k">=</span> HashingTF(<span class="pl-v">numFeatures</span><span class="pl-k">=</span><span class="pl-c1">500</span>, <span class="pl-v">inputCol</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>nGrams<span class="pl-pds">"</span></span>, <span class="pl-v">outputCol</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>TF<span class="pl-pds">"</span></span>)
-<span class="pl-v">idf</span> <span class="pl-k">=</span> IDF(<span class="pl-v">inputCol</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>TF<span class="pl-pds">"</span></span>, <span class="pl-v">outputCol</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>idf<span class="pl-pds">"</span></span>)
-<span class="pl-v">pipeline</span> <span class="pl-k">=</span> Pipeline(<span class="pl-v">stages</span> <span class="pl-k">=</span> [<span class="pl-smi">ngram</span>, <span class="pl-smi">hashingTF</span>, <span class="pl-smi">idf</span>])
+<div class="highlight highlight-source-python"><pre><span class="pl-c"># Pipeline consisting of three stages: NGrams, HashingTF and IDF</span>
+ngram <span class="pl-k">=</span> NGram(<span class="pl-smi">n</span><span class="pl-k">=</span><span class="pl-c1">2</span>, <span class="pl-smi">inputCol</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span>, <span class="pl-smi">outputCol</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>nGrams<span class="pl-pds">'</span></span>)
+hashingTF <span class="pl-k">=</span> HashingTF(<span class="pl-smi">numFeatures</span><span class="pl-k">=</span><span class="pl-c1">500</span>, <span class="pl-smi">inputCol</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>nGrams<span class="pl-pds">'</span></span>, <span class="pl-smi">outputCol</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>TF<span class="pl-pds">'</span></span>)
+idf <span class="pl-k">=</span> IDF(<span class="pl-smi">inputCol</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>TF<span class="pl-pds">'</span></span>, <span class="pl-smi">outputCol</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>idf<span class="pl-pds">'</span></span>)
+pipeline <span class="pl-k">=</span> Pipeline(<span class="pl-smi">stages</span> <span class="pl-k">=</span> [ngram, hashingTF, idf])
 
 <span class="pl-c"># Fit the pipeline </span>
-<span class="pl-v">pipelined_data</span> <span class="pl-k">=</span> pipeline.fit(<span class="pl-smi">df</span>)
-<span class="pl-v">transformed_data</span> <span class="pl-k">=</span> pipelined_data.transform(<span class="pl-smi">df</span>)
-<span class="pl-smi">training_set</span>, <span class="pl-v">test_set</span> <span class="pl-k">=</span> transformed_data.randomSplit([<span class="pl-c1">0.8</span>, <span class="pl-c1">0.2</span>], <span class="pl-v">seed</span> <span class="pl-k">=</span> <span class="pl-c1">10</span>)</pre></div>
+pipelined_data <span class="pl-k">=</span> pipeline.fit(df)
+transformed_data <span class="pl-k">=</span> pipelined_data.transform(df)
+training_set, test_set <span class="pl-k">=</span> transformed_data.randomSplit([<span class="pl-c1">0.8</span>, <span class="pl-c1">0.2</span>], <span class="pl-smi">seed</span> <span class="pl-k">=</span> <span class="pl-c1">10</span>)</pre></div>
 
 <p>Once the data is transformed, the dataset is split into a training set made of 80% of the original dataset, and a test set made of the remaining 20%.</p>
 
@@ -310,7 +310,7 @@ length of names per race.</p>
 <p>In the next piece of code, the model is created, trained and tested using the test dataset. After that, we calculate the accuracy which is 0.801282051282 or roughly 80%.</p>
 
 <div class="highlight highlight-source-python"><pre><span class="pl-c"># Create the model, train and predict</span>
-nb <span class="pl-k">=</span> NaiveBayes(<span class="pl-smi">smoothing</span><span class="pl-k">=</span><span class="pl-c1">1.0</span>, <span class="pl-smi">modelType</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>multinomial<span class="pl-pds">"</span></span>, <span class="pl-smi">featuresCol</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>idf<span class="pl-pds">'</span></span>, <span class="pl-smi">labelCol</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>race<span class="pl-pds">'</span></span>)
+nb <span class="pl-k">=</span> NaiveBayes(<span class="pl-smi">smoothing</span><span class="pl-k">=</span><span class="pl-c1">1.0</span>, <span class="pl-smi">modelType</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>multinomial<span class="pl-pds">'</span></span>, <span class="pl-smi">featuresCol</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>idf<span class="pl-pds">'</span></span>, <span class="pl-smi">labelCol</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>race<span class="pl-pds">'</span></span>)
 model <span class="pl-k">=</span> nb.fit(training_set)
 predictions <span class="pl-k">=</span> model.transform(test_set)
 accuracy <span class="pl-k">=</span> <span class="pl-c1">1.0</span> <span class="pl-k">*</span> predictions.filter(predictions.race <span class="pl-k">==</span> predictions.prediction).count() <span class="pl-k">/</span> predictions.count()
