@@ -86,7 +86,7 @@
   }
 }</pre></div>
 
-<p>Now, we have the data in a dataframe. However, we are not done yet! As usual, the data is not in the right shape. Some of the observations has <code>?</code> as the character name, NA entries and trailing spaces. So, let's clean.</p>
+<p>Now, we have the data in a dataframe (a table structure; think of an Excel worksheet). However, we are not done yet! As usual, the data is not in the right shape. Some of the observations has <code>?</code> as the character name, NA entries and trailing spaces (white spaces after the end of the word). So, let's clean.</p>
 
 <div class="highlight highlight-source-r"><pre><span class="pl-c"># Remove rows with NA</span>
 <span class="pl-smi">characters_data</span> <span class="pl-k">&lt;-</span> na.omit(<span class="pl-smi">characters_data</span>)
@@ -153,7 +153,7 @@ imported_data <span class="pl-k">=</span> sqlContext.read.format(<span class="pl
 
 <p>Because the data was exported from R as a CSV file, we need to load it as a CSV. Luckily for us, there is a package for Spark that handles this, <a href="http://spark-packages.org/package/databricks/spark-csv">spark-csv</a>.</p>
 
-<p>Once the data is loaded, I created a new RDD made of four columns. These are:</p>
+<p>Once the data is loaded, the next action is to create an RDD (a structure that holds the data) made of four columns. These are:</p>
 
 <ul>
 <li>
