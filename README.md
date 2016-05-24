@@ -19,9 +19,4 @@ In this report, I will discuss and show an approach used to predict the races of
 This repo holds the Python script used for the analysis, the R script used for scraping and transforming the data, the original scraped data, and several CSV files with the final data (the one used in the analysis is *characters_no_surnames.csv*)
 
 ## Report
-
-Link coming soon
-
-
-
-Work in progress... More details soon.
+[An approach to classify the races of characters from Lord of the Rings using their names as feature and naive Bayes](http://juandes.github.io/lotr-names-classification/)
