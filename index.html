@@ -29,27 +29,27 @@
       </header>
       <section>
         <h1>
-<a id="an-approach-to-classify-the-races-of-characters-from-lord-of-the-rings-using-their-names-as-feature-and-naive-bayes" class="anchor" href="#an-approach-to-classify-the-races-of-characters-from-lord-of-the-rings-using-their-names-as-feature-and-naive-bayes" aria-hidden="true"><span class="octicon octicon-link"></span></a>An approach to classify the races of characters from Lord of the Rings using their names as feature and naive Bayes</h1>
+<a id="an-approach-to-classify-the-races-of-characters-from-lord-of-the-rings-using-their-names-as-feature-and-naive-bayes" class="anchor" href="#an-approach-to-classify-the-races-of-characters-from-lord-of-the-rings-using-their-names-as-feature-and-naive-bayes" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>An approach to classify the races of characters from Lord of the Rings using their names as feature and naive Bayes</h1>
 
 <h2>
-<a id="overview" class="anchor" href="#overview" aria-hidden="true"><span class="octicon octicon-link"></span></a>Overview</h2>
+<a id="overview" class="anchor" href="#overview" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Overview</h2>
 
 <hr>
 
 <p>As a huge fan of the Lord of the Rings and Tolkien's work, I was interested in finding a way of using data from the legendarium with machine learning. While searching and pondering about what problem could be interesting, I had the idea of playing around with the names of the characters and the relation to the race of said character.</p>
 
-<p>In this report, I will discuss and show an approach used to predict the races of the characters from Lord of the Rings using a naive Bayes classifier and various techniques for natural language processing. How is that done? You might ask. The reasoning behind this, is that an algorithm will be trained using the names of the characters and their races. While it is being trained, it will learn about the similarities between the names and the races. For example, suppose that we tell to the algorithm that the name <code>Juan</code>, <code>Jose</code> and <code>Jony</code> are Spanish names, in other words we are teaching the model that a name that starts with <code>J</code>, and has four characters is indeed a Spanish name. After the model is train, we feed it with the name <code>Javi</code> and if the training was successful, the algorithm will output that the name is a Spanish one. The dataset used consists of 827 observations (characters) and their respective race.</p>
+<p>In this report, I will discuss and show an approach used to predict the races of the characters from Lord of the Rings using a naive Bayes classifier and various techniques for natural language processing. How is that done? You might ask. The reasoning behind this, is that an algorithm will be trained using the names of the characters and their races. While it is being trained, it will learn about the similarities between the names and the races. For example, suppose that we tell to the algorithm that the name <code>Juan</code>, <code>Jose</code> and <code>Jony</code> are Spanish names, in other words we are teaching the model that a name that starts with <code>J</code>, and has four characters is indeed a Spanish name. After the model is train, we feed it with the name <code>Javi</code> and if the training was successful, the algorithm will output that the name is a Spanish one. The dataset used consists of 789 observations (characters) and their respective race.</p>
 
 <h3>
-<a id="data-fields" class="anchor" href="#data-fields" aria-hidden="true"><span class="octicon octicon-link"></span></a>Data fields</h3>
+<a id="data-fields" class="anchor" href="#data-fields" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Data fields</h3>
 
 <ul>
 <li>name: the name of the character</li>
-<li>race: the race of the character. There are five possible races: Man, Ainur, Elf, Dwarf and Hobbit.</li>
+<li>race: the race of the character. There are four possible races: Man, Elf, Dwarf and Hobbit.</li>
 </ul>
 
 <h3>
-<a id="tools-used" class="anchor" href="#tools-used" aria-hidden="true"><span class="octicon octicon-link"></span></a>Tools used</h3>
+<a id="tools-used" class="anchor" href="#tools-used" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Tools used</h3>
 
 <ul>
 <li>Spark (Pyspark)</li>
@@ -57,7 +57,7 @@
 </ul>
 
 <h2>
-<a id="scraping-the-data" class="anchor" href="#scraping-the-data" aria-hidden="true"><span class="octicon octicon-link"></span></a>Scraping the data</h2>
+<a id="scraping-the-data" class="anchor" href="#scraping-the-data" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Scraping the data</h2>
 
 <hr>
 
@@ -136,19 +136,24 @@
 <div class="highlight highlight-source-r"><pre>write.csv(<span class="pl-smi">characters_no_surnames</span>, <span class="pl-v">file</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>characters_no_surnames.csv<span class="pl-pds">'</span></span>, <span class="pl-v">row.names</span> <span class="pl-k">=</span> <span class="pl-c1">FALSE</span>)
 write.csv(<span class="pl-smi">characters_data</span>, <span class="pl-v">file</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>characters_data.csv<span class="pl-pds">'</span></span>, <span class="pl-v">row.names</span> <span class="pl-k">=</span> <span class="pl-c1">FALSE</span>)</pre></div>
 
+<p>During an early version of this report, I was using the Ainur race, however after performing the experiment I discovered that it didn't add much to the prediction model since the number of cases was really low, so I decided to remove it entirely from the dataset.</p>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-smi">characters.no.ainur</span> <span class="pl-k">&lt;-</span> filter(<span class="pl-smi">characters_no_surnames</span>, <span class="pl-smi">race</span> <span class="pl-k">!=</span> <span class="pl-s"><span class="pl-pds">"</span>Ainur<span class="pl-pds">"</span></span>)
+write.csv(<span class="pl-smi">characters.no.ainur</span>, <span class="pl-v">file</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>characters_no_ainur.csv<span class="pl-pds">"</span></span>, <span class="pl-v">row.names</span> <span class="pl-k">=</span> <span class="pl-c1">FALSE</span>)</pre></div>
+
 <h2>
-<a id="model-development-and-prediction" class="anchor" href="#model-development-and-prediction" aria-hidden="true"><span class="octicon octicon-link"></span></a>Model development and prediction</h2>
+<a id="model-development-and-prediction" class="anchor" href="#model-development-and-prediction" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Model development and prediction</h2>
 
 <hr>
 
 <h3>
-<a id="loading-and-pre-processing-of-data" class="anchor" href="#loading-and-pre-processing-of-data" aria-hidden="true"><span class="octicon octicon-link"></span></a>Loading and pre-processing of data</h3>
+<a id="loading-and-pre-processing-of-data" class="anchor" href="#loading-and-pre-processing-of-data" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Loading and pre-processing of data</h3>
 
 <p>Now that we have the data, lets start the actual analysis in Spark. We will start by loading the data.</p>
 
 <div class="highlight highlight-source-python"><pre><span class="pl-c"># Import both the train and test dataset and register them as tables</span>
 imported_data <span class="pl-k">=</span> sqlContext.read.format(<span class="pl-s"><span class="pl-pds">'</span>com.databricks.spark.csv<span class="pl-pds">'</span></span>).options(
-    <span class="pl-smi">header</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>true<span class="pl-pds">'</span></span>) \
+    <span class="pl-v">header</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>true<span class="pl-pds">'</span></span>) \
     .load(<span class="pl-s"><span class="pl-pds">'</span>/Users/Juande/Development/lotr-names-classification/characters_no_surnames.csv<span class="pl-pds">'</span></span>)</pre></div>
 
 <p>Because the data was exported from R as a CSV file, we need to load it as a CSV. Luckily for us, there is a package for Spark that handles this, <a href="http://spark-packages.org/package/databricks/spark-csv">spark-csv</a>.</p>
@@ -161,22 +166,20 @@ imported_data <span class="pl-k">=</span> sqlContext.read.format(<span class="pl
 <li>
 <strong>name</strong> : name of the character (in lower case) as a list of characters, e.g. ['a','r','a','g','o','r','n']</li>
 <li>
-<strong>race</strong>: race of the character, as a number; 0.0 for man, 1.0 for ainur, 2.0 for elf, 3.0 for hobbit and 4.0 for dwarf.</li>
-<li>
-<strong>length</strong>: number of characters in the name. This feature is not used for the prediction, but we'll see at the end of the report.</li>
+<strong>race</strong>: race of the character, as a number; 0.0 for man, 1.0 for elf, 2.0 for hobbit, and 3.0 for dwarf.</li>
 </ul>
 
 <div class="highlight highlight-source-python"><pre><span class="pl-c"># Map the race to a number</span>
-race_to_number <span class="pl-k">=</span> {<span class="pl-s"><span class="pl-pds">'</span>Man<span class="pl-pds">'</span></span>: <span class="pl-c1">0.0</span>, <span class="pl-s"><span class="pl-pds">'</span>Ainur<span class="pl-pds">'</span></span>: <span class="pl-c1">1.0</span>, <span class="pl-s"><span class="pl-pds">'</span>Elf<span class="pl-pds">'</span></span>: <span class="pl-c1">2.0</span>, <span class="pl-s"><span class="pl-pds">'</span>Hobbit<span class="pl-pds">'</span></span>: <span class="pl-c1">3.0</span>, <span class="pl-s"><span class="pl-pds">'</span>Dwarf<span class="pl-pds">'</span></span>: <span class="pl-c1">4.0</span>}
+race_to_number <span class="pl-k">=</span> {<span class="pl-s"><span class="pl-pds">'</span>Man<span class="pl-pds">'</span></span>: <span class="pl-c1">0.0</span>, <span class="pl-s"><span class="pl-pds">'</span>Elf<span class="pl-pds">'</span></span>: <span class="pl-c1">1.0</span>, <span class="pl-s"><span class="pl-pds">'</span>Hobbit<span class="pl-pds">'</span></span>: <span class="pl-c1">2.0</span>, <span class="pl-s"><span class="pl-pds">'</span>Dwarf<span class="pl-pds">'</span></span>: <span class="pl-c1">3.0</span>}
 
 <span class="pl-c"># Build a new rdd made of a row that has the name of the character, the name as a list of the characters, the race of</span>
-<span class="pl-c"># the character and the length of the name (this might be used later)</span>
-data_rdd <span class="pl-k">=</span> imported_data.map(<span class="pl-k">lambda</span> <span class="pl-smi">row</span>: Row(<span class="pl-smi">complete_name</span><span class="pl-k">=</span>row.name, <span class="pl-smi">name</span><span class="pl-k">=</span><span class="pl-c1">list</span>(row.name.lower()),
-                                             <span class="pl-smi">race</span><span class="pl-k">=</span>race_to_number[row.race], <span class="pl-smi">length</span><span class="pl-k">=</span><span class="pl-c1">len</span>(row.name)))
+<span class="pl-c"># the character</span>
+data_rdd <span class="pl-k">=</span> imported_data.map(<span class="pl-k">lambda</span> <span class="pl-smi">row</span>: Row(<span class="pl-v">complete_name</span><span class="pl-k">=</span>row.name, <span class="pl-v">name</span><span class="pl-k">=</span><span class="pl-c1">list</span>(row.name.lower()),
+                                             <span class="pl-v">race</span><span class="pl-k">=</span>race_to_number[row.race]))
 df <span class="pl-k">=</span> sqlContext.createDataFrame(data_rdd)</pre></div>
 
 <h3>
-<a id="transformation-pipeline" class="anchor" href="#transformation-pipeline" aria-hidden="true"><span class="octicon octicon-link"></span></a>Transformation pipeline</h3>
+<a id="transformation-pipeline" class="anchor" href="#transformation-pipeline" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Transformation pipeline</h3>
 
 <p>One of the reason why I did this work, was to test Spark's ML pipeline. Normally, I used the MLLIB library for performing machine learning, but for this work I wanted to try ML and its pipeline for the first time. A pipeline is a sequence of stages where the data is transformed at each step. For more details of this, check the official documentation at <a href="http://spark.apache.org/docs/latest/ml-guide.html#pipeline">Spark's pipeline</a>. You might be asking why we need to transform the names, and the reason is that with this kind of problems (natural language processing), is not always optimal to use the text as it is. Normally, you have to transform it in such as way that it is better for the algorithms to process it.</p>
 
@@ -187,29 +190,26 @@ df <span class="pl-k">=</span> sqlContext.createDataFrame(data_rdd)</pre></div>
 <em>n-gram</em>: <em>n-gram is a contiguous sequence of n items from a given sequence of text or speech.</em> (<a href="https://en.wikipedia.org/wiki/N-gram">NGram</a>). In this case, the items are the characters of the name. For this problem, I used an ngran with <em>n=2</em>, also known as a bigram.</li>
 <li>
 <em>HashingTF</em>: Hashing trick or HashingTF (as it is called in Spark) is a technique used for turning features into indices of a vector. In other words, what we are doing with this transformation, is turning each item of the bigram into a number.</li>
-<li>
-<em>IDF</em>: Inverse document frequency (IDF) is a technique used to deduct how important a bigram (in this case, typically it is a word) is to a document. This IDF number increased proportionally to the number of times a bigram appears in the document, or corpus. This transforming along with HashingTF are known as TF-IDF.</li>
 </ul>
 
 <p>To explain the pipeline, let's use the name 'aragorn' as an example. Don't worry about the meaning of the numbers, the purpose of this example is to illustrate the process.</p>
 
-<p><code>aragorn</code> -&gt; apply n-gram -&gt; <code>['a r', 'r a', 'a g', 'g o', 'o r', 'r n']</code> -&gt; apply HashingTF -&gt; <code>[86, 143, 156, 277, 312, 323]</code> -&gt; apply IDF -&gt; <code>[2.6586, 2.3246, 2.8272, 1.8987, 3.5835, 1.5832]</code></p>
+<p><code>aragorn</code> -&gt; apply n-gram -&gt; <code>['a r', 'r a', 'a g', 'g o', 'o r', 'r n']</code> -&gt; apply HashingTF -&gt; <code>[86, 143, 156, 277, 312, 323]</code></p>
 
-<div class="highlight highlight-source-python"><pre><span class="pl-c"># Pipeline consisting of three stages: NGrams, HashingTF and IDF</span>
-ngram <span class="pl-k">=</span> NGram(<span class="pl-smi">n</span><span class="pl-k">=</span><span class="pl-c1">2</span>, <span class="pl-smi">inputCol</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span>, <span class="pl-smi">outputCol</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>nGrams<span class="pl-pds">'</span></span>)
-hashingTF <span class="pl-k">=</span> HashingTF(<span class="pl-smi">numFeatures</span><span class="pl-k">=</span><span class="pl-c1">500</span>, <span class="pl-smi">inputCol</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>nGrams<span class="pl-pds">'</span></span>, <span class="pl-smi">outputCol</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>TF<span class="pl-pds">'</span></span>)
-idf <span class="pl-k">=</span> IDF(<span class="pl-smi">inputCol</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>TF<span class="pl-pds">'</span></span>, <span class="pl-smi">outputCol</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>idf<span class="pl-pds">'</span></span>)
-pipeline <span class="pl-k">=</span> Pipeline(<span class="pl-smi">stages</span> <span class="pl-k">=</span> [ngram, hashingTF, idf])
+<div class="highlight highlight-source-python"><pre><span class="pl-c"># Pipeline consisting of three stages: NGrams, HashingTF</span>
+ngram <span class="pl-k">=</span> NGram(<span class="pl-v">n</span><span class="pl-k">=</span><span class="pl-c1">3</span>, <span class="pl-v">inputCol</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>name<span class="pl-pds">"</span></span>, <span class="pl-v">outputCol</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>nGrams<span class="pl-pds">"</span></span>)
+hashingTF <span class="pl-k">=</span> HashingTF(<span class="pl-v">numFeatures</span><span class="pl-k">=</span><span class="pl-c1">500</span>, <span class="pl-v">inputCol</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>nGrams<span class="pl-pds">"</span></span>, <span class="pl-v">outputCol</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>TF<span class="pl-pds">"</span></span>)
+pipeline <span class="pl-k">=</span> Pipeline(<span class="pl-v">stages</span><span class="pl-k">=</span>[ngram, hashingTF])
 
 <span class="pl-c"># Fit the pipeline </span>
 pipelined_data <span class="pl-k">=</span> pipeline.fit(df)
 transformed_data <span class="pl-k">=</span> pipelined_data.transform(df)
-training_set, test_set <span class="pl-k">=</span> transformed_data.randomSplit([<span class="pl-c1">0.8</span>, <span class="pl-c1">0.2</span>], <span class="pl-smi">seed</span> <span class="pl-k">=</span> <span class="pl-c1">10</span>)</pre></div>
+training_set, test_set <span class="pl-k">=</span> transformed_data.randomSplit([<span class="pl-c1">0.8</span>, <span class="pl-c1">0.2</span>], <span class="pl-v">seed</span><span class="pl-k">=</span><span class="pl-c1">10</span>)</pre></div>
 
 <p>Once the data is transformed, the dataset is split into a training set made of 80% of the original dataset, and a test set made of the remaining 20%.</p>
 
 <h3>
-<a id="overview-of-the-data" class="anchor" href="#overview-of-the-data" aria-hidden="true"><span class="octicon octicon-link"></span></a>Overview of the data</h3>
+<a id="overview-of-the-data" class="anchor" href="#overview-of-the-data" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Overview of the data</h3>
 
 <p>Before going into the actual prediction section, I would like to show some of the data so you can see it for yourself and reach your own conclusions about the similarities between the names (if there is one). When looking at it, think of the example of the Spanish names explained at the start.</p>
 
@@ -217,7 +217,6 @@ training_set, test_set <span class="pl-k">=</span> transformed_data.randomSplit(
 <thead>
 <tr>
 <th>Man</th>
-<th align="center">Ainur</th>
 <th align="right">Elf</th>
 <th>Hobbit</th>
 <th>Dwarf</th>
@@ -226,35 +225,30 @@ training_set, test_set <span class="pl-k">=</span> transformed_data.randomSplit(
 <tbody>
 <tr>
 <td>Aragorn</td>
-<td align="center">Manwë</td>
 <td align="right">Arwen</td>
 <td>Frodo</td>
 <td>Durin</td>
 </tr>
 <tr>
 <td>Aulendil</td>
-<td align="center">Aulë</td>
 <td align="right">Ingwë</td>
 <td>Ferumbras</td>
 <td>Óin</td>
 </tr>
 <tr>
 <td>Atanalcar</td>
-<td align="center">Oromë</td>
 <td align="right">Ingil</td>
 <td>Fortinbras</td>
 <td>Thráin</td>
 </tr>
 <tr>
 <td>Vardamir</td>
-<td align="center">Irmo</td>
 <td align="right">Galadriel</td>
 <td>Isembard</td>
 <td>Thorin</td>
 </tr>
 <tr>
 <td>Axantur</td>
-<td align="center">Morgorh</td>
 <td align="right">Celeborn</td>
 <td>Flambard</td>
 <td>Glóin</td>
@@ -262,64 +256,63 @@ training_set, test_set <span class="pl-k">=</span> transformed_data.randomSplit(
 </tbody>
 </table>
 
-<p>Notice any similarities between the races? What do you think? Remember the length feature I defined earlier? Let's see the average
-length of names per race.</p>
+<p>Notice any similarities between the races? What do you think?</p>
 
-<div class="highlight highlight-source-python"><pre>df.groupBy(<span class="pl-s"><span class="pl-pds">'</span>race<span class="pl-pds">'</span></span>).agg({<span class="pl-s"><span class="pl-pds">'</span>length<span class="pl-pds">'</span></span>: <span class="pl-s"><span class="pl-pds">'</span>avg<span class="pl-pds">'</span></span>}).show()</pre></div>
+<p>Now, to the prediction model.</p>
+
+<h2>
+<a id="prediction-and-results" class="anchor" href="#prediction-and-results" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Prediction and results</h2>
+
+<p>The prediction model used in this report is a naive Bayes classifier. In most cases, this classifier performs well while working with text data because of it assumes that attributes values are independent of each other. But wait? If we are trying to predict the races based on the format of the name, why this? Good question. For these kind of problems the terms are conditionally dependent on each other, but let's not think about that.</p>
+
+<p>In the next piece of code, the model is created, trained and tested using the test dataset. After that, we calculate the accuracy which is 0.82119205298 or roughly 82%.</p>
+
+<div class="highlight highlight-source-python"><pre><span class="pl-c"># Create the model, train and predict</span>
+nb <span class="pl-k">=</span> NaiveBayes(<span class="pl-v">smoothing</span><span class="pl-k">=</span><span class="pl-c1">1.0</span>, <span class="pl-v">modelType</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>multinomial<span class="pl-pds">"</span></span>, <span class="pl-v">featuresCol</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>TF<span class="pl-pds">'</span></span>, <span class="pl-v">labelCol</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>race<span class="pl-pds">'</span></span>)
+model <span class="pl-k">=</span> nb.fit(training_set)
+predictions <span class="pl-k">=</span> model.transform(test_set)
+
+<span class="pl-c"># Evaluate the results</span>
+evaluator <span class="pl-k">=</span> MulticlassClassificationEvaluator(<span class="pl-v">predictionCol</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>prediction<span class="pl-pds">'</span></span>, <span class="pl-v">labelCol</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>race<span class="pl-pds">'</span></span>)
+result <span class="pl-k">=</span> predictions.select(<span class="pl-s"><span class="pl-pds">'</span>race<span class="pl-pds">'</span></span>,<span class="pl-s"><span class="pl-pds">'</span>prediction<span class="pl-pds">'</span></span>)
+result_rdd <span class="pl-k">=</span> result.rdd
+metrics <span class="pl-k">=</span> MulticlassMetrics(result_rdd)</pre></div>
+
+<p>While 82% is a good accuracy, it does not means that model is a good one. Upon further examination of the model using a statistic called f1 score or f measure that focuses on the proportion of positive results for one race against the positive results of all the cases.</p>
+
+<p>For this problem we were able to achieve a precision of 0.629139072848, overall f-score of 0.605332849886, and the following f scores for each one of the races</p>
 
 <table>
 <thead>
 <tr>
 <th>Race</th>
-<th align="center">Length</th>
+<th align="right">F-score</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>Man</td>
-<td align="center">7.13842482</td>
-</tr>
-<tr>
-<td>Ainur</td>
-<td align="center">5.97368421</td>
-</tr>
-<tr>
-<td>Elf</td>
-<td align="center">6.55855855</td>
-</tr>
-<tr>
-<td>Hobbit</td>
-<td align="center">6.37142857</td>
+<td align="right">0.260869565217</td>
 </tr>
 <tr>
 <td>Dwarf</td>
-<td align="center">4.75510204</td>
+<td align="right">0.333333333333</td>
+</tr>
+<tr>
+<td>Hobbit</td>
+<td align="right">0.567901234568</td>
+</tr>
+<tr>
+<td>Man</td>
+<td align="right">0.73333333333</td>
 </tr>
 </tbody>
 </table>
 
-<p>The table shows that on average, men has the longest names, e.g. Atanalcar, while dwarves have the shortest ones (heh!), e.g. Óin.</p>
-
-<p>Now, to the prediction model.</p>
+<p>Thus, our high accuracy is due to the fact that we are many cases of characters belonging to the race of Men, and fortunately, most of this cases were predicted correctly.</p>
 
 <h2>
-<a id="prediction-and-results" class="anchor" href="#prediction-and-results" aria-hidden="true"><span class="octicon octicon-link"></span></a>Prediction and results</h2>
-
-<p>The prediction model used in this report is a naive Bayes classifier. In most cases, this classifier performs well while working with text data because of it assumes that attributes values are independent of each other. But wait? If we are trying to predict the races based on the format of the name, why this? Good question. For these kind of problems the terms are conditionally dependent on each other, but let's not think about that.</p>
-
-<p>In the next piece of code, the model is created, trained and tested using the test dataset. After that, we calculate the accuracy which is 0.801282051282 or roughly 80%.</p>
-
-<div class="highlight highlight-source-python"><pre><span class="pl-c"># Create the model, train and predict</span>
-nb <span class="pl-k">=</span> NaiveBayes(<span class="pl-smi">smoothing</span><span class="pl-k">=</span><span class="pl-c1">1.0</span>, <span class="pl-smi">modelType</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>multinomial<span class="pl-pds">'</span></span>, <span class="pl-smi">featuresCol</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>idf<span class="pl-pds">'</span></span>, <span class="pl-smi">labelCol</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>race<span class="pl-pds">'</span></span>)
-model <span class="pl-k">=</span> nb.fit(training_set)
-predictions <span class="pl-k">=</span> model.transform(test_set)
-accuracy <span class="pl-k">=</span> <span class="pl-c1">1.0</span> <span class="pl-k">*</span> predictions.filter(predictions.race <span class="pl-k">==</span> predictions.prediction).count() <span class="pl-k">/</span> predictions.count()
-<span class="pl-k">print</span> (accuracy)</pre></div>
-
-<p>80% is a good number! It means that in 8 out of 10 cases the model was able to guess correctly the race of the character. Better than random guessing, eh?</p>
-
-<h2>
-<a id="conclusion" class="anchor" href="#conclusion" aria-hidden="true"><span class="octicon octicon-link"></span></a>Conclusion</h2>
+<a id="conclusion" class="anchor" href="#conclusion" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Conclusion</h2>
 
 <hr>
 
