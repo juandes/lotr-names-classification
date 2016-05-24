@@ -4,7 +4,7 @@
 
 As a huge fan of the Lord of the Rings and Tolkien's work, I was interested in finding a way of using data from the legendarium with machine learning. While searching and pondering about what problem could be interesting, I had the idea of playing around with the names of the characters and the relation to the race of said character.
 
-In this report, I will discuss and show an approach used to predict the races of the characters from Lord of the Rings using a naive Bayes classifier and various techniques for natural language processing. The dataset used consists of 827 observations (characters) and their respective race.
+In this report, I will discuss and show an approach used to predict the races of the characters from Lord of the Rings using a naive Bayes classifier and various techniques for natural language processing. The dataset used consists of 789 observations (characters) and their respective race.
 
 ### Data fields
 - name: the name of the character
