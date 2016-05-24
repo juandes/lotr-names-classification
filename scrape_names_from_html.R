@@ -43,9 +43,12 @@ characters_data$name <- sub('[ \t]+$', '', characters_data$name)
 characters_data <- characters_data[characters_data$name != 'Others' & 
                                      characters_data$name != 'Master of La...', ]
 
-# This names of the characters on this dataframe won't have any surnames or
+# The names of the characters on this dataframe won't have any surnames or
 # numbers on their name; we'll keep just the first name.
 characters_no_surnames <- characters_data
 
 # Regex to remove everything after the first whitespace
 characters_no_surnames$name <- sub(' .*', '', characters_no_surnames$name)
+
+write.csv(characters_no_surnames, file = 'characters_no_surnames.csv', row.names = FALSE)
+write.csv(characters_data, file = 'characters_data.csv', row.names = FALSE)
