@@ -265,7 +265,7 @@ training_set, test_set <span class="pl-k">=</span> transformed_data.randomSplit(
 
 <p>The prediction model used in this report is a naive Bayes classifier. In most cases, this classifier performs well while working with text data because of it assumes that attributes values are independent of each other. But wait? If we are trying to predict the races based on the format of the name, why this? Good question. For these kind of problems the terms are conditionally dependent on each other, but let's not think about that.</p>
 
-<p>In the next piece of code, the model is created, trained and tested using the test dataset. After that, we calculate the accuracy which is 0.82119205298 or roughly 82%.</p>
+<p>In the next piece of code, the model is created, trained and tested using the test dataset.</p>
 
 <div class="highlight highlight-source-python"><pre><span class="pl-c"># Create the model, train and predict</span>
 nb <span class="pl-k">=</span> NaiveBayes(<span class="pl-v">smoothing</span><span class="pl-k">=</span><span class="pl-c1">1.0</span>, <span class="pl-v">modelType</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>multinomial<span class="pl-pds">"</span></span>, <span class="pl-v">featuresCol</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>TF<span class="pl-pds">'</span></span>, <span class="pl-v">labelCol</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>race<span class="pl-pds">'</span></span>)
@@ -278,7 +278,7 @@ result <span class="pl-k">=</span> predictions.select(<span class="pl-s"><span c
 result_rdd <span class="pl-k">=</span> result.rdd
 metrics <span class="pl-k">=</span> MulticlassMetrics(result_rdd)</pre></div>
 
-<p>While 82% is a good accuracy, it does not means that model is a good one. Upon further examination of the model using a statistic called f1 score or f measure that focuses on the proportion of positive results for one race against the positive results of all the cases.</p>
+<p>Upon further examination of the model using a statistic called f1 score or f measure that focuses on the proportion of positive results for one race against the positive results of all the cases.</p>
 
 <p>For this problem we were able to achieve a precision of 0.629139072848, overall f-score of 0.605332849886, and the following f scores for each one of the races</p>
 
@@ -309,8 +309,6 @@ metrics <span class="pl-k">=</span> MulticlassMetrics(result_rdd)</pre></div>
 </tbody>
 </table>
 
-<p>Thus, our high accuracy is due to the fact that we are many cases of characters belonging to the race of Men, and fortunately, most of this cases were predicted correctly.</p>
-
 <h2>
 <a id="conclusion" class="anchor" href="#conclusion" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Conclusion</h2>
 
@@ -318,7 +316,7 @@ metrics <span class="pl-k">=</span> MulticlassMetrics(result_rdd)</pre></div>
 
 <p>In this report we built a naive Bayes classifier model for classifying the races of characters of Lord of the Rings based on their name. While doing it, topics such as classification, pipeline, and data pre-processing were discussed.</p>
 
-<p>What now? While the result of the algorithm was a good one, I am sure that the accuracy percentage can be improved at least by a few percentages. Our model was based on the bigram of the name, however certain features such as the length of the name, the ratio between vowels/consonants, and the number of foreign letters should be analyzed.</p>
+<p>What now? The outcome of this experiment was not what I was expecting, however I am sure that the accuracy percentage can be improved at least by a few percentages. Our model was based on the bigram of the name, however certain features such as the length of the name, the ratio between vowels/consonants, and the number of foreign letters should be analyzed.</p>
 
 <p>Tolkien was a genius.</p>
       </section>
