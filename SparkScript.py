@@ -28,7 +28,7 @@ data_rdd = imported_data.map(lambda row: Row(complete_name=row.name, name=list(r
                                              race=race_to_number[row.race]))
 df = sqlContext.createDataFrame(data_rdd)
 
-# Pipeline consisting of three stages: NGrams, HashingTF and IDF
+# Pipeline consisting of two stages: NGrams and HashingTF
 ngram = NGram(n=3, inputCol="name", outputCol="nGrams")
 hashingTF = HashingTF(numFeatures=500, inputCol="nGrams", outputCol="TF")
 pipeline = Pipeline(stages=[ngram, hashingTF])
