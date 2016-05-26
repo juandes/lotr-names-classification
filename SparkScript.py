@@ -1,5 +1,6 @@
 from pyspark import SparkConf, SparkContext
 from pyspark.ml import Pipeline
+from pyspark.ml.clustering import KMeans
 from pyspark.ml.feature import NGram
 from pyspark.ml.feature import IDF
 from pyspark.ml.feature import HashingTF
@@ -9,11 +10,13 @@ from pyspark.mllib.evaluation import MulticlassMetrics
 from pyspark.sql import Row
 from pyspark.sql import SQLContext
 
-conf = SparkConf().setMaster("spark://Juande.local:7077").setAppName(
+# TODO: send the master address via command line argument
+conf = SparkConf().setMaster("spark://blabla:7077").setAppName(
     "LOTR Names classification")
 sc = SparkContext(conf=conf)
 sqlContext = SQLContext(sc)
 
+# TODO: send the file location via command line argument
 # Import both the train and test dataset and register them as tables
 imported_data = sqlContext.read.format('com.databricks.spark.csv').options(
     header='true') \
@@ -49,10 +52,32 @@ result = predictions.select('race','prediction')
 result_rdd = result.rdd
 metrics = MulticlassMetrics(result_rdd)
 
+print("Naive Bayes model evaluation")
 print("F score: {}".format(evaluator.evaluate(result)))
 print(metrics.confusionMatrix())
 for k,v in race_to_number.iteritems():
     print("F score for {}: {}".format(k, metrics.fMeasure(v)))
 print("Precision: {}".format(evaluator.evaluate(result, {evaluator.metricName: 'precision'})))
-accuracy = 1.0 * predictions.filter(predictions.race == predictions.prediction).count() / predictions.count()
-print ("Accuracy: {}".format(accuracy))
+print ("Contigency table of the prediction results of naive bayes model")
+result.stat.crosstab('prediction', 'prediction').show()
+
+## KMeans
+# Pipeline consisting of two stages: NGrams and HashingTF
+ngram = NGram(n=3, inputCol="name", outputCol="nGrams")
+hashingTF = HashingTF(numFeatures=100, inputCol="nGrams", outputCol="TF")
+pipeline = Pipeline(stages=[ngram, hashingTF])
+
+# Fit the pipeline 
+pipelined_data = pipeline.fit(df)
+transformed_data = pipelined_data.transform(df)
+training_set, test_set = transformed_data.randomSplit([0.8, 0.2], seed=10)
+
+# Create the model, train and predict
+kmeans = KMeans(k=4, seed = 10, featuresCol='TF')
+kmeans_model = kmeans.fit(training_set)
+predictions = kmeans_model.transform(test_set)
+
+# Evaluate the results
+result = predictions.select('race','prediction')
+print ("Contigency table of the prediction results of the k means model")
+result.stat.crosstab('prediction', 'prediction').show()
